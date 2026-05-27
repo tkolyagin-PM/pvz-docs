@@ -33,8 +33,13 @@ TEMPLATES = {
 SA_PATH = os.getenv("SA_PATH", "service_account.json")
 
 def _get_token():
-    with open(SA_PATH) as f:
-        sa = json.load(f)
+    sa_json = os.getenv("GOOGLE_SA_JSON")
+    if sa_json:
+        sa = json.loads(sa_json)
+    else:
+        sa_path = os.getenv("SA_PATH", "service_account.json")
+        with open(sa_path) as f:
+            sa = json.load(f)
     now = int(time.time())
     header  = base64.urlsafe_b64encode(json.dumps({"alg":"RS256","typ":"JWT"}).encode()).rstrip(b'=')
     payload = base64.urlsafe_b64encode(json.dumps({
