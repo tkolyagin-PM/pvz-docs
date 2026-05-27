@@ -60,13 +60,13 @@ def _get_token():
 
 # ─── HELPERS ──────────────────────────────────────────────
 def _copy_template(token, template_id, name):
-    # Скачиваем шаблон как DOCX
-    resp = requests.get(
-        f"https://www.googleapis.com/drive/v3/files/{template_id}/export",
-        headers={"Authorization": f"Bearer {token}"},
-        params={"mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+    resp = requests.post(
+        f"https://www.googleapis.com/drive/v3/files/{template_id}/copy",
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        json={"name": name, "parents": [FOLDER_ID]}
     )
     resp.raise_for_status()
+    return resp.json()['id']
     
     # Загружаем как новый файл в папку
     from io import BytesIO
