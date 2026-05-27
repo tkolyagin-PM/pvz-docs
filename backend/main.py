@@ -45,7 +45,8 @@ async def generate_docs(data: dict):
         links = create_documents(data)
         return {"success": True, "links": links}
     except Exception as e:
-        raise HTTPException(500, str(e))
+        import traceback
+        raise HTTPException(500, str(e) + "\n" + traceback.format_exc())
 
 
 @app.post("/api/validate")
