@@ -60,14 +60,27 @@ def _get_token():
 
 # ─── HELPERS ──────────────────────────────────────────────
 def _copy_template(token, template_id, name):
-    resp = requests.post(
-        f"https://www.googleapis.com/drive/v3/files/{template_id}/copy",
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        json={"name": name, "parents": [FOLDER_ID]}
+    # Скачиваем шаблон как DOCX
+    resp = requests.get(
+        f"https://www.googleapis.com/drive/v3/files/{template_id}/export",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
     )
     resp.raise_for_status()
-    return resp.json()['id']
-
+    
+    # Загружаем как новый файл в папку
+    from io import BytesIO
+    metadata = json.dumps({"name": name, "parents": [FOLDER_ID]})
+    upload_resp = requests.post(
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+        headers={"Authorization": f"Bearer {token}"},
+        files={
+            "metadata": ("metadata", metadata, "application/json"),
+            "file": (name + ".docx", BytesIO(resp.content), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        }
+    )
+    upload_resp.raise_for_status()
+    return upload_resp.json()['id']
 def _replace_placeholders(token, doc_id, replacements):
     requests_body = [
         {"replaceAllText": {
