@@ -30,8 +30,6 @@ TEMPLATES = {
 }
 
 # ─── AUTH ─────────────────────────────────────────────────
-SA_PATH = os.getenv("SA_PATH", "service_account.json")
-
 def _get_token():
     sa_json = os.getenv("GOOGLE_SA_JSON")
     if sa_json:
@@ -68,6 +66,8 @@ def _copy_template(token, template_id, name):
     resp.raise_for_status()
     return resp.json()['id']
 
+def _replace_placeholders(token, doc_id, replacements):
+    requests_body = [
         {"replaceAllText": {
             "containsText": {"text": key, "matchCase": True},
             "replaceText": str(val)
